@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<!-- Crucial para el diseño responsive en móviles -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Calculadora de Salario por Hora y Día - CGT</title>
+<style>
+  * {
+    box-sizing: border-box;
+  }
+
+  body { 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+    padding: 20px; 
+    background-image: url('https://www.cgtvalencia.org/wp-content/uploads/2023/10/logocgtcadrado.png');
+    background-size: contain; 
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    background-color: #111; 
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  
+  .calc { 
+    width: 100%;
+    max-width: 440px; 
+    background: rgba(255, 255, 255, 0.88); 
+    backdrop-filter: blur(10px); 
+    -webkit-backdrop-filter: blur(10px); 
+    border-radius: 16px; 
+    padding: 24px; 
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); 
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    margin: 20px auto; 
+  }
+
+  h2, h3 { color: #cc0000; text-align: center; margin-top: 0; text-shadow: 0 1px 2px rgba(255,255,255,0.8); }
+  label { display: block; margin-bottom: 5px; font-weight: bold; color: #111; margin-top: 14px; }
+  
+  /* Se usa font-size 16px para evitar el auto-zoom molesto en iOS/Android */
+  input, select { 
+    width: 100%; 
+    padding: 12px; 
+    box-sizing: border-box; 
+    border: 1px solid rgba(0, 0, 0, 0.25); 
+    border-radius: 8px; 
+    background: rgba(255, 255, 255, 0.95);
+    font-weight: 500;
+    font-size: 16px; 
+  }
+
+  .campo-destacado {
+    border: 2px solid #cc0000 !important;
+    background: #ffffff !important;
+  }
+
+  .tiempo-grupo {
+    display: flex;
+    gap: 10px;
+  }
+
+  .tiempo-columna {
+    flex: 1;
+  }
+
+  .tiempo-columna span {
+    display: block;
+    font-size: 13px;
+    color: #444;
+    margin-bottom: 4px;
+    font-weight: 500;
+  }
+  
+  .checkbox-group { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+  .checkbox-item { display: flex; align-items: center; justify-content: space-between; font-weight: normal; margin-top: 0; cursor: pointer; }
+  .checkbox-item input { width: 20px; height: 20px; margin-bottom: 0; cursor: pointer; }
+  
+  button { 
+    width: 100%; 
+    padding: 14px; 
+    background: #cc0000; 
+    color: white; 
+    border: none; 
+    border-radius: 8px; 
+    font-size: 17px; 
+    font-weight: bold;
+    cursor: pointer; 
+    margin-top: 20px; 
+    box-shadow: 0 4px 10px rgba(204, 0, 0, 0.3);
+    touch-action: manipulation;
+  }
+  button:active { transform: scale(0.98); }
+  button:hover { background: #990000; }
+  
+  .resultado { 
+    margin-top: 20px; 
+    padding: 14px; 
+    background: rgba(248, 249, 250, 0.95); 
+    border-left: 5px solid #cc0000; 
+    border-radius: 8px; 
+    line-height: 1.6; 
+    font-size: 15px;
+  }
+  .seccion-dia { border-top: 2px solid #cc0000; margin-top: 20px; padding-top: 10px; }
+
+  /* AJUSTES ESPECÍFICOS PARA MÓVILES (Pantallas < 480px) */
+  @media (max-width: 480px) {
+    body {
+      padding: 10px 8px;
+    }
+
+    .calc {
+      padding: 16px 14px;
+      margin: 10px auto;
+      border-radius: 12px;
+    }
+
+    h2 {
+      font-size: 1.35rem;
+    }
+
+    h3 {
+      font-size: 1.15rem;
+    }
+
+    .checkbox-item {
+      font-size: 14px;
+    }
+
+    button {
+      padding: 15px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="calc">
+  <h2>Calculadora de Salario</h2>
+  
+  <label for="salario">Salario Bruto Anual Base (40h):</label>
+  <input type="number" id="salario" value="0" step="0.01" placeholder="Introduce tu salario bruto anual">
+  
+  <label for="horasSemanales">Horas Semanales de tu Contrato:</label>
+  <input type="number" id="horasSemanales" class="campo-destacado" value="0" step="0.5" min="0" max="40" placeholder="Escribe tus horas (ej: 24.5, 32, 40)">
+
+  <label for="antiguedad">Antigüedad (Plus mensual):</label>
+  <select id="antiguedad">
+    <option value="0">Sin antigüedad (0 €/mes)</option>
+    <option value="41.40">5 años (41,40 €/mes)</option>
+    <option value="81.76">10 años (81,76 €/mes)</option>
+    <option value="156.29">15 años (156,29 €/mes)</option>
+    <option value="312.60">20 años (312,60 €/mes)</option>
+    <option value="390.72">25 años (390,72 €/mes)</option>
+    <option value="483.10">30 años o más (483,10 €/mes)</option>
+  </select>
+
+  <label for="irpf">Retención IRPF (%):</label>
+  <input type="number" id="irpf" value="0" step="0.1" min="0" max="100" placeholder="Introduce tu retención (ej: 12)">
+
+  <!-- Precios de Pluses de solo lectura -->
+  <input type="hidden" id="precioExtra" value="13.28">
+  <input type="hidden" id="plusNocturnidad" value="2.32">
+  <input type="hidden" id="plusDomingo" value="89.15">
+  <input type="hidden" id="plusFestivo" value="181.10">
+  <input type="hidden" id="plusTransporte" value="7.26">
+
+  <!-- SECCIÓN PARA CALCULAR EL DÍA TRABAJADO -->
+  <div class="seccion-dia">
+    <h3>Cálculo de Jornada Diaria</h3>
+    
+    <label>Tiempo trabajado hoy:</label>
+    <div class="tiempo-grupo">
+      <div class="tiempo-columna">
+        <span>Horas</span>
+        <input type="number" id="horasDia" value="0" min="0" max="24" placeholder="Horas">
+      </div>
+      <div class="tiempo-columna">
+        <span>Minutos</span>
+        <input type="number" id="minutosDia" value="0" min="0" max="59" step="1" placeholder="Minutos">
+      </div>
+    </div>
+
+    <label>Opciones del día trabajado:</label>
+    <div class="checkbox-group">
+      <label class="checkbox-item">
+        <span>¿Es Hora Ordinaria?</span>
+        <input type="checkbox" id="checkOrdinaria" checked onchange="alSeleccionarTipoHora('ordinaria')">
+      </label>
+      <label class="checkbox-item">
+        <span>¿Es Hora Extra?</span>
+        <input type="checkbox" id="checkExtra" onchange="alSeleccionarTipoHora('extra')">
+      </label>
+      <label class="checkbox-item">
+        <span>¿Es Hora Complementaria?</span>
+        <input type="checkbox" id="checkComplementaria" onchange="alSeleccionarTipoHora('complementaria')">
+      </label>
+
+      <hr style="border:0; border-top: 1px solid rgba(0,0,0,0.1); margin: 4px 0;">
+
+      <label class="checkbox-item">
+        <span>Incluir Plus Transporte (diario)</span>
+        <input type="checkbox" id="checkTransporte" checked>
+      </label>
+      <label class="checkbox-item">
+        <span>¿Es turno de Domingo?</span>
+        <input type="checkbox" id="checkDomingo">
+      </label>
+      <label class="checkbox-item">
+        <span>¿Es día Festivo?</span>
+        <input type="checkbox" id="checkFestivo">
+      </label>
+    </div>
+
+    <label for="horasNocturnas">Horas en Horario Nocturno (si aplica):</label>
+    <input type="number" id="horasNocturnas" value="0" min="0" max="12" placeholder="Nº de horas nocturnas">
+  </div>
+
+  <button onclick="calcular()">Calcular Ganancia Diaria</button>
+  
+  <div class="resultado" id="resultado"></div>
+</div>
+
+<script>
+function alSeleccionarTipoHora(tipo) {
+  if (tipo === 'ordinaria' && document.getElementById('checkOrdinaria').checked) {
+    document.getElementById('checkExtra').checked = false;
+    document.getElementById('checkComplementaria').checked = false;
+  } else if (tipo === 'extra' && document.getElementById('checkExtra').checked) {
+    document.getElementById('checkOrdinaria').checked = false;
+    document.getElementById('checkComplementaria').checked = false;
+  } else if (tipo === 'complementaria' && document.getElementById('checkComplementaria').checked) {
+    document.getElementById('checkOrdinaria').checked = false;
+    document.getElementById('checkExtra').checked = false;
+  }
+}
+
+function calcular() {
+  var salarioBaseFull = parseFloat(document.getElementById('salario').value) || 0;
+  var horasSemana = parseFloat(document.getElementById('horasSemanales').value) || 0;
+  var plusAntiguedadMes = parseFloat(document.getElementById('antiguedad').value) || 0;
+  var pctIrpf = parseFloat(document.getElementById('irpf').value) || 0;
+  
+  var precioExtra = parseFloat(document.getElementById('precioExtra').value);
+  var precioNocturnidad = parseFloat(document.getElementById('plusNocturnidad').value);
+  var plusDomingo = parseFloat(document.getElementById('plusDomingo').value);
+  var plusFestivo = parseFloat(document.getElementById('plusFestivo').value);
+  var plusTransporte = parseFloat(document.getElementById('plusTransporte').value);
+
+  var hDia = parseFloat(document.getElementById('horasDia').value) || 0;
+  var mDia = parseFloat(document.getElementById('minutosDia').value) || 0;
+  var horasTrabajadasDia = hDia + (mDia / 60);
+
+  var horasNocturnasDia = parseFloat(document.getElementById('horasNocturnas').value) || 0;
+  
+  var esOrdinaria = document.getElementById('checkOrdinaria').checked;
+  var esExtra = document.getElementById('checkExtra').checked;
+  var esComplementaria = document.getElementById('checkComplementaria').checked;
+  
+  var tieneTransporte = document.getElementById('checkTransporte').checked;
+  var esDomingo = document.getElementById('checkDomingo').checked;
+  var esFestivo = document.getElementById('checkFestivo').checked;
+
+  if (salarioBaseFull <= 0) {
+    document.getElementById('resultado').innerHTML = "Por favor, introduce tu salario bruto anual base.";
+    return;
+  }
+
+  if (horasSemana <= 0) {
+    document.getElementById('resultado').innerHTML = "Por favor, introduce las horas semanales de tu contrato.";
+    return;
+  }
+
+  if (horasTrabajadasDia <= 0) {
+    document.getElementById('resultado').innerHTML = "Por favor, introduce el tiempo trabajado hoy (horas y/o minutos).";
+    return;
+  }
+
+  var horasAnuales = horasSemana * 45;
+  var proporcion = horasSemana / 40;
+  var salarioBaseAjustado = salarioBaseFull * proporcion;
+  var totalAntiguedadAnual = plusAntiguedadMes * 12;
+  var salarioTotalAnual = salarioBaseAjustado + totalAntiguedadAnual;
+
+  var ordinariaHoraTotal = salarioTotalAnual / horasAnuales;
+
+  var precioHoraBaseAplicado = ordinariaHoraTotal;
+  var tipoHoraTexto = "Ordinaria (con antigüedad)";
+
+  if (esExtra) {
+    precioHoraBaseAplicado = precioExtra;
+    tipoHoraTexto = "Hora Extraordinaria (" + precioExtra.toFixed(2) + " €/h)";
+  } else if (esComplementaria) {
+    precioHoraBaseAplicado = ordinariaHoraTotal;
+    tipoHoraTexto = "Hora Complementaria (" + ordinariaHoraTotal.toFixed(2) + " €/h)";
+  } else if (esOrdinaria) {
+    precioHoraBaseAplicado = ordinariaHoraTotal;
+    tipoHoraTexto = "Hora Ordinaria (" + ordinariaHoraTotal.toFixed(2) + " €/h)";
+  }
+
+  var gananciaHorasBase = horasTrabajadasDia * precioHoraBaseAplicado;
+  var gananciaNocturnidad = horasNocturnasDia * precioNocturnidad;
+  var gananciaTransporte = tieneTransporte ? plusTransporte : 0;
+  var gananciaDomingo = esDomingo ? plusDomingo : 0;
+  var gananciaFestivo = esFestivo ? plusFestivo : 0;
+
+  var totalGanadoDiaBruto = gananciaHorasBase + gananciaNocturnidad + gananciaTransporte + gananciaDomingo + gananciaFestivo;
+  
+  var descuentoIrpf = totalGanadoDiaBruto * (pctIrpf / 100);
+  var totalGanadoDiaNeto = totalGanadoDiaBruto - descuentoIrpf;
+
+  var textoDetalleTiempo = hDia + "h" + (mDia > 0 ? " " + mDia + "min" : "");
+
+  var texto = "<strong>Resumen de Tarifa Hora (" + horasSemana + "h semanales):</strong><br>";
+  texto += "Hora Ordinaria Base: " + ordinariaHoraTotal.toFixed(2) + " €/h<br>";
+  
+  texto += "<hr style='border: 0; border-top: 1px solid #ccc; margin: 8px 0;'>";
+  texto += "<strong>Ganancia del Día (" + textoDetalleTiempo + "):</strong><br>";
+  texto += "• Pago por tiempo (" + tipoHoraTexto + "): " + gananciaHorasBase.toFixed(2) + " €<br>";
+  
+  if (gananciaNocturnidad > 0) {
+    texto += "• Plus Nocturnidad (" + horasNocturnasDia + "h x " + precioNocturnidad.toFixed(2) + "€): +" + gananciaNocturnidad.toFixed(2) + " €<br>";
+  }
+  if (gananciaTransporte > 0) {
+    texto += "• Plus Transporte (Día): +" + gananciaTransporte.toFixed(2) + " €<br>";
+  }
+  if (gananciaDomingo > 0) {
+    texto += "• Plus Domingo (Jornada): +" + gananciaDomingo.toFixed(2) + " €<br>";
+  }
+  if (gananciaFestivo > 0) {
+    texto += "• Plus Festivo (Jornada): +" + gananciaFestivo.toFixed(2) + " €<br>";
+  }
+
+  texto += "<br><strong>TOTAL BRUTO DEL DÍA: " + totalGanadoDiaBruto.toFixed(2) + " €</strong><br>";
+  if (pctIrpf > 0) {
+    texto += "<i>Descuento IRPF (" + pctIrpf + "%): -" + descuentoIrpf.toFixed(2) + " €</i><br>";
+    texto += "<strong style='font-size: 1.15em; color: #28a745;'>TOTAL NETO DEL DÍA: " + totalGanadoDiaNeto.toFixed(2) + " €</strong>";
+  } else {
+    texto += "<i>Retención IRPF a 0%</i><br>";
+    texto += "<strong style='font-size: 1.15em; color: #28a745;'>TOTAL NETO DEL DÍA: " + totalGanadoDiaBruto.toFixed(2) + " €</strong>";
+  }
+
+  document.getElementById('resultado').innerHTML = texto;
+}
+</script>
+
+</body>
+</html>
